@@ -109,11 +109,12 @@ class AccountJournal(models.Model):
 
     @api.model
     def create(self, vals):
-        res = super().create(vals)
         if vals.get('type') in ('sale', 'purchase') and \
                 vals.get('debitnote_sequence') and not \
                 vals.get('debitnote_sequence_id'):
             vals.update({'debitnote_sequence_id':
                         self.sudo()._create_debitnote_sequence
                         (vals, debitnote=True).id})
+        res = super().create(vals)
+
         return res
