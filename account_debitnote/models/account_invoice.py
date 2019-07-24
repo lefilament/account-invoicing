@@ -18,6 +18,7 @@ class AccountInvoice(models.Model):
         inverse_name='debit_invoice_id',
         string='Debit Notes',
         readonly=True,
+        help="List all debit notes being created by this invoice",
     )
 
     @api.model
@@ -57,7 +58,6 @@ class AccountInvoice(models.Model):
             generation (making sure to call super() to establish a clean
             extension chain).
 
-            :param integer invoice_id: id of the invoice to create debit note
             :param dict invoice: read of the invoice to create debit note
             :param string invoice_date: debit note create date from the wizard
             :param integer date: force account.period from the wizard

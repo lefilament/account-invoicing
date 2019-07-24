@@ -45,8 +45,8 @@ class AccountInvoiceDebitnote(models.TransientModel):
             description = False
             for inv in inv_obj.browse(context.get('active_ids')):
                 if inv.state in ['draft', 'cancel']:
-                    raise ValidationError(_('''Cannot create debit note for
-                                           draft/cancel invoice.'''))
+                    raise ValidationError(_("""Cannot create debit note for
+                                           draft/cancel invoice."""))
 
                 date = form.date or False
                 description = form.description or inv.name
