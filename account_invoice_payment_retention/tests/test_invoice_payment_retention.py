@@ -127,8 +127,8 @@ class TestInvoicePaymentRetention(SavepointCase):
         self.env.company.retention_account_id = self.account_retention
 
     def test_invoice_payment_retention_errors(self):
-        """ Test invoice retention amount warning
-            Test enforce retention warning when no valid retention
+        """Test invoice retention amount warning
+        Test enforce retention warning when no valid retention
         """
         # Test invoice retention amount calculation
         with self.assertRaises(ValidationError):
@@ -160,8 +160,7 @@ class TestInvoicePaymentRetention(SavepointCase):
             _ = payment.reconciled_invoice_ids  # Check reconciled
 
     def test_cust_invoice_payment_retention_normal(self):
-        """ Test 2 invoice retention and 1 retetnion return invoice
-        """
+        """Test 2 invoice retention and 1 retetnion return invoice"""
         self.cust_invoice2 = self.cust_invoice.copy({"name": "Test Invoice 2"})
         # Invoice 1, 10% = 50.0
         self.cust_invoice.payment_retention = "percent"
@@ -232,8 +231,7 @@ class TestInvoicePaymentRetention(SavepointCase):
         self.assertFalse(retained_move_ids)
 
     def test_vendor_bill_payment_retention_currency(self):
-        """ Test 2 invoice retention and 1 retetnion return invoice
-        """
+        """Test 2 invoice retention and 1 retetnion return invoice"""
         self.vendor_bill2 = self.vendor_bill.copy({"name": "Test Bill 2"})
         # Invoice 1, 10% = 50.0
         self.vendor_bill.payment_retention = "percent"
@@ -307,8 +305,7 @@ class TestInvoicePaymentRetention(SavepointCase):
         self.assertFalse(retained_move_ids)
 
     def test_multi_invoice_payment(self):
-        """ Test multi invoice payment. Not allowed if retention
-        """
+        """Test multi invoice payment. Not allowed if retention"""
         # Test multi invoice payment, no retention
         self.invoice_normal1 = self.cust_invoice.copy({"name": "Normal 1"})
         self.invoice_normal1.post()

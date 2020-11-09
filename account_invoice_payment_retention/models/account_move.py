@@ -29,7 +29,8 @@ class AccountMove(models.Model):
         help="Based on retention type, this field show the amount to retain.",
     )
     retention_residual_currency = fields.Monetary(
-        string="Retention Residual", compute="_compute_retention_residual_currency",
+        string="Retention Residual",
+        compute="_compute_retention_residual_currency",
     )
     retained_move_ids = fields.Many2many(
         comodel_name="account.move",

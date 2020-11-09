@@ -69,8 +69,8 @@ class AccountPayment(models.Model):
         return res
 
     def _validate_payment_retention(self):
-        """ If this payment enforce_payment_retention, after reconciliation
-            is completed, invoice retention residual should be zero """
+        """If this payment enforce_payment_retention, after reconciliation
+        is completed, invoice retention residual should be zero"""
         for rec in self.filtered("enforce_payment_retention"):
             invoices = rec.reconciled_invoice_ids
             if not invoices:
