@@ -3,7 +3,7 @@
 
 {
     "name": "Account Invoice Payment Retention",
-    "version": "13.0.1.0.0",
+    "version": "14.0.1.0.0",
     "category": "Accounting & Finance",
     "author": "Ecosoft, Odoo Community Association (OCA)",
     "license": "AGPL-3",
@@ -13,7 +13,7 @@
         "security/security.xml",
         "views/res_config_settings_views.xml",
         "views/account_move_views.xml",
-        "views/account_payment_views.xml",
+        "wizard/account_payment_register_views.xml",
     ],
     "maintainer": ["kittiu"],
     "installable": True,

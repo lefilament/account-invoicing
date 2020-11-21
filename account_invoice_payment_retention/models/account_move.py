@@ -109,7 +109,13 @@ class AccountMove(models.Model):
             if rec.payment_retention == "amount":
                 amount = rec.amount_retention
             elif rec.payment_retention == "percent":
-                amount = rec.amount_untaxed * rec.amount_retention / 100
+                # Ensure working with purchase deposit, sum only positive qty lines
+                amount_untaxed = sum(
+                    rec.invoice_line_ids.filtered(lambda l: l.quantity > 0).mapped(
+                        "amount_currency"
+                    )
+                )
+                amount = amount_untaxed * rec.amount_retention / 100
             rec.retention_amount_currency = amount
 
     def _get_retained_move_lines(self, retained_invoice):
@@ -132,7 +138,7 @@ class AccountMove(models.Model):
                 continue
             retained_moves = self._get_retained_move_lines(rec)
             retained = 0.0
-            sign = 1 if rec.type in ["in_invoice", "out_refund"] else -1
+            sign = 1 if rec.move_type in ["in_invoice", "out_refund"] else -1
             if rec.currency_id == rec.company_currency_id:
                 retained = sum(retained_moves.mapped("balance"))
             else:
@@ -152,8 +158,8 @@ class AccountMove(models.Model):
                     _("Retention must not exceed the total untaxed amount")
                 )
 
-    def post(self):
-        res = super().post()
+    def action_post(self):
+        res = super().action_post()
         for rec in self:
             if self.retained_move_ids:
                 retention_account = self.env.company.retention_account_id
