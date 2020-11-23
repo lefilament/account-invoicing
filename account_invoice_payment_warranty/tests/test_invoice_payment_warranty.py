@@ -10,10 +10,13 @@ class TestInvoicePaymentWarranty(SavepointCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.invoice_model = cls.env["account.move"]
         cls.partner = cls.env.ref("base.res_partner_12")
         cls.product_1 = cls.env.ref("product.product_product_3")
         cls.product_2 = cls.env.ref("product.product_product_5")
+        cls.invoice_model = cls.env["account.move"]
+        cls.payment_model = cls.env["account.payment"]
+        cls.payment_register_model = cls.env["account.payment.register"]
+        cls.register_view_id = "account.view_account_payment_register_form"
         cls.account_warranty = cls.env["account.account"].create(
             {
                 "code": "WR",
@@ -36,22 +39,24 @@ class TestInvoicePaymentWarranty(SavepointCase):
                     "user_type_id",
                     "=",
                     cls.env.ref("account.data_account_type_revenue").id,
-                )
+                ),
+                ("company_id", "=", cls.env.company.id),
             ],
             limit=1,
         )
         cls.sale_journal = cls.env["account.journal"].search(
-            [("type", "=", "sale")], limit=1
+            [("type", "=", "sale"), ("company_id", "=", cls.env.company.id)], limit=1
         )
         cls.purchase_journal = cls.env["account.journal"].search(
-            [("type", "=", "purchase")], limit=1
+            [("type", "=", "purchase"), ("company_id", "=", cls.env.company.id)],
+            limit=1,
         )
 
     def _create_invoice(self, is_warranty=False):
         cust_invoice = self.invoice_model.create(
             {
                 "name": "Test Customer Invoice",
-                "type": "out_invoice",
+                "move_type": "out_invoice",
                 "journal_id": self.sale_journal.id,
                 "partner_id": self.partner.id,
                 "is_warranty": is_warranty,
@@ -105,22 +110,23 @@ class TestInvoicePaymentWarranty(SavepointCase):
         cust_invoice2 = self._create_invoice(is_warranty=True)
         self.assertTrue(cust_invoice2.is_warranty)
         self.assertEqual(len(cust_invoice2.invoice_line_ids), 1)
-        cust_invoice2.post()
+        cust_invoice2.action_post()
         # register payment
         ctx = {
             "active_ids": [cust_invoice2.id],
             "active_id": cust_invoice2.id,
             "active_model": "account.move",
         }
-        PaymentWizard = self.env["account.payment"]
-        view_id = "account.view_account_payment_invoice_form"
-        with Form(PaymentWizard.with_context(ctx), view=view_id) as f:
-            payment = f.save()
-        payment.post()
-        self.assertEqual(cust_invoice2.invoice_payment_state, "paid")
-        payment_moves = payment.move_line_ids.mapped("move_id")
+        with Form(
+            self.payment_register_model.with_context(ctx), view=self.register_view_id
+        ) as f:
+            payment_register = f.save()
+        payment_dict = payment_register.action_create_payments()
+        payment = self.payment_model.browse(payment_dict.get("res_id", False))
+        self.assertEqual(cust_invoice2.payment_state, "paid")
+        payment_moves = payment.line_ids.mapped("move_id")
         # return warranty
-        ctx = {"default_type": "in_invoice"}
+        ctx = {"default_move_type": "in_invoice"}
         view_id = "account.view_move_form"
         with Form(self.invoice_model.with_context(ctx), view=view_id) as f:
             f.journal_id = self.purchase_journal
@@ -141,4 +147,4 @@ class TestInvoicePaymentWarranty(SavepointCase):
             for move in warranty_move_ids:
                 f.warranty_move_ids.add(move)
         cust_invoice3 = f.save()
-        cust_invoice3.post()
+        cust_invoice3.action_post()
