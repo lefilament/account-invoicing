@@ -17,13 +17,13 @@ class AccountMove(models.Model):
 
     @api.depends("posted_before", "state", "journal_id", "date")
     def _compute_name(self):
-        options = self.env["sequence.option"].get_model_options(self._name)
+        options = self.env["ir.sequence.option.line"].get_model_options(self._name)
         # On post, get the sequence option
         if options:
             for rec in self.filtered(
                 lambda l: l.name in (False, "/") and l.state == "posted"
             ):
-                sequence = self.env["sequence.option"].get_sequence(
+                sequence = self.env["ir.sequence.option.line"].get_sequence(
                     rec, options=options
                 )
                 if sequence:
@@ -41,7 +41,9 @@ class AccountMove(models.Model):
 
     # Bypass constrains if sequence is defined
     def _constrains_date_sequence(self):
-        records = self.filtered(lambda l: self.env["sequence.option"].get_sequence(l))
+        records = self.filtered(
+            lambda l: self.env["ir.sequence.option.line"].get_sequence(l)
+        )
         return super(AccountMove, self - records)._constrains_date_sequence()
 
     def _get_last_sequence_domain(self, relaxed=False):
